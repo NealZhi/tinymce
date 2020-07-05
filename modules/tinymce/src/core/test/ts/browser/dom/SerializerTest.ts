@@ -807,10 +807,30 @@ UnitTest.asynctest('browser.tinymce.core.dom.SerializerTest', function (success,
     const lastNodeFilter = Arr.last(ser.getNodeFilters()).getOrDie('Failed to get filter');
     const lastAttributeFilter = Arr.last(ser.getAttributeFilters()).getOrDie('Failed to get filter');
 
-    Assert.eq('Should be the last registred filter element name', 'some-tag', lastNodeFilter.name);
-    Assert.eq('Should be the last registred node filter function', nodeFilter, lastNodeFilter.callbacks[0]);
-    Assert.eq('Should be the last registred filter attribute name', 'data-something', lastAttributeFilter.name);
-    Assert.eq('Should be the last registred attribute filter function', attrFilter, lastAttributeFilter.callbacks[0]);
+    Assert.eq('Should be the last registered filter element name', 'some-tag', lastNodeFilter.name);
+    Assert.eq('Should be the last registered node filter function', nodeFilter, lastNodeFilter.callbacks[0]);
+    Assert.eq('Should be the last registered filter attribute name', 'data-something', lastAttributeFilter.name);
+    Assert.eq('Should be the last registered attribute filter function', attrFilter, lastAttributeFilter.callbacks[0]);
+  });
+
+  suite.test('Restore media elements contenteditable attribute', () => {
+    const attrs = 'contenteditable|data-mce-contenteditable|type|src|data|controls|width|height';
+    const ser = Serializer({
+      valid_elements: `p[${attrs}],video[${attrs}],audio[${attrs}],embed[${attrs}],object[${attrs}]`
+    });
+
+    DOM.setHTML('test',
+      '<p><video contenteditable="false" data-mce-contenteditable="false" src="/custom/video.mp4" controls="controls"></video></p>' +
+      '<p><audio contenteditable="false" src="/custom/audio.mp3" controls="controls"></audio></p>' +
+      '<p><embed contenteditable="false" type="video/webm" src="/custom/video.mp4" width="100" height="100" /></p>' +
+      '<p><object contenteditable="false" type="application/pdf" data="/custom/file.pdf" width="100" height="100"></object></p>'
+    );
+    LegacyUnit.equal(ser.serialize(DOM.get('test')),
+      '<p><video contenteditable="false" src="/custom/video.mp4" controls="controls"></video></p>' +
+      '<p><audio src="/custom/audio.mp3" controls="controls"></audio></p>' +
+      '<p><embed type="video/webm" src="/custom/video.mp4" width="100" height="100" /></p>' +
+      '<p><object type="application/pdf" data="/custom/file.pdf" width="100" height="100"></object></p>'
+    );
   });
 
   viewBlock.attach();

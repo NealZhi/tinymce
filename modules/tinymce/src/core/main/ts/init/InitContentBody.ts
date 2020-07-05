@@ -205,6 +205,19 @@ const createParser = function (editor: Editor): DomParser {
     }
   });
 
+  // Convert native media elements to non editable elements
+  parser.addNodeFilter('video,audio,embed,object', (nodes) => {
+    let i = nodes.length;
+    while (i--) {
+      const node = nodes[i];
+      const ce = node.attr('contenteditable');
+      if (ce && !node.attr('data-mce-contenteditable')) {
+        node.attr('data-mce-contenteditable', ce);
+      }
+      node.attr('contenteditable', 'false');
+    }
+  });
+
   return parser;
 };
 
